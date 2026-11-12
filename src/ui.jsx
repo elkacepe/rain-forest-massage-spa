@@ -210,6 +210,7 @@ export function longDate(iso) {
 /** Calendario mensual. `marks`: Set de fechas ISO con un punto (por ejemplo, días con sesiones). */
 export function Calendar({ value, onChange, marks }) {
   const [view, setView] = React.useState(value.slice(0, 7));
+  const [mode, setMode] = React.useState('days'); // 'days' | 'months'
   React.useEffect(() => setView(value.slice(0, 7)), [value]);
   const [y, m] = view.split('-').map(Number);
   const first = (new Date(y, m - 1, 1).getDay() + 6) % 7; // lunes = 0
@@ -217,12 +218,50 @@ export function Calendar({ value, onChange, marks }) {
   const today = isoToday();
   const shift = (n) => { const d = new Date(y, m - 1 + n, 1); setView(`${d.getFullYear()}-${p2(d.getMonth() + 1)}`); };
   const cells = [...Array(first).fill(null), ...Array.from({ length: days }, (_, i) => `${view}-${p2(i + 1)}`)];
+  const navBtn = 'flex h-11 w-11 items-center justify-center rounded-full text-selva hover:bg-selva/5';
+  const valueYM = value.slice(0, 7);
+  const todayYM = today.slice(0, 7);
+
+  if (mode === 'months') {
+    // Vista de año: flechas cambian de año y se elige el mes.
+    return (
+      <div className="select-none">
+        <div className="mb-3 flex items-center justify-between">
+          <button type="button" onClick={() => shift(-12)} aria-label="Año anterior" className={navBtn}><ChevronLeft /></button>
+          <button type="button" onClick={() => setMode('days')} className="tabular min-h-[44px] rounded-full px-4 font-display text-[22px] text-selva hover:bg-selva/5" aria-label="Volver a los días">{y}</button>
+          <button type="button" onClick={() => shift(12)} aria-label="Año siguiente" className={navBtn}><ChevronRight /></button>
+        </div>
+        <div className="grid grid-cols-3 gap-2">
+          {MESES_LARGO.map((name, i) => {
+            const ym = `${y}-${p2(i + 1)}`;
+            const sel = ym === valueYM;
+            const hasMark = marks && [...marks].some((d) => d.startsWith(ym));
+            return (
+              <button key={ym} type="button" onClick={() => { setView(ym); setMode('days'); }} aria-pressed={sel} className={`relative min-h-[48px] rounded-xl text-[15px] font-semibold capitalize transition ${sel ? 'bg-selva text-white' : ym === todayYM ? 'text-terracota ring-1 ring-terracota' : 'bg-arena/70 text-noche hover:bg-selva/5'}`}>
+                {name.slice(0, 3)}
+                {hasMark && <span className={`absolute bottom-1.5 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full ${sel ? 'bg-oro' : 'bg-terracota'}`} />}
+              </button>
+            );
+          })}
+        </div>
+        {y !== Number(today.slice(0, 4)) && (
+          <div className="mt-3 text-center">
+            <button type="button" onClick={() => { setView(todayYM); setMode('days'); }} className="min-h-[40px] rounded-full px-4 text-[14px] font-semibold text-selva hover:bg-selva/5">Volver a {today.slice(0, 4)}</button>
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="select-none">
       <div className="mb-2 flex items-center justify-between">
-        <button type="button" onClick={() => shift(-1)} aria-label="Mes anterior" className="flex h-11 w-11 items-center justify-center rounded-full text-selva hover:bg-selva/5"><ChevronLeft /></button>
-        <p className="font-display text-[20px] capitalize text-selva">{MESES_LARGO[m - 1]} {y}</p>
-        <button type="button" onClick={() => shift(1)} aria-label="Mes siguiente" className="flex h-11 w-11 items-center justify-center rounded-full text-selva hover:bg-selva/5"><ChevronRight /></button>
+        <button type="button" onClick={() => shift(-1)} aria-label="Mes anterior" className={navBtn}><ChevronLeft /></button>
+        <button type="button" onClick={() => setMode('months')} aria-label={`Cambiar mes o año (${MESES_LARGO[m - 1]} ${y})`} className="inline-flex min-h-[44px] items-center gap-1.5 rounded-full px-3 font-display text-[20px] capitalize text-selva hover:bg-selva/5">
+          {MESES_LARGO[m - 1]} <span className="tabular">{y}</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 text-noche/50" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
+        </button>
+        <button type="button" onClick={() => shift(1)} aria-label="Mes siguiente" className={navBtn}><ChevronRight /></button>
       </div>
       <div className="grid grid-cols-7 text-center">
         {DIAS_CORTO.map((d) => <span key={d} className="pb-1 text-[12px] font-semibold text-noche/50">{d}</span>)}
