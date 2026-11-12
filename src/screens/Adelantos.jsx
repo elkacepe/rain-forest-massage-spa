@@ -4,7 +4,7 @@ import { advanceCheck, isLocked } from '../lib/engine.js';
 import { quincenaOf, quincenaLabel, dateLabel } from '../lib/dates.js';
 import { therapistById } from '../lib/config.js';
 import { money } from '../lib/format.js';
-import { Button, DateField, Empty, ErrorBox, Field, PageTitle, Row, Sheet } from '../ui.jsx';
+import { Button, DateField, Empty, ErrorBox, Field, PersonList, PageTitle, Row, Sheet } from '../ui.jsx';
 
 export default function Adelantos({ app }) {
   const { state, today, commit } = app;
@@ -33,13 +33,10 @@ export default function Adelantos({ app }) {
       <PageTitle eyebrow="Dirección" title="Adelantos" />
 
       <form onSubmit={submit} className="card flex flex-col gap-5 px-5 py-5">
-        <Field label="Terapeuta">
-          <select className="field" value={f.therapistId} onChange={(e) => set({ therapistId: e.target.value })}>
-            {state.therapists.map((t) => (
-              <option key={t.id} value={t.id}>{t.name}</option>
-            ))}
-          </select>
-        </Field>
+        <div>
+          <span className="label mb-1.5 block">Terapeuta</span>
+          <PersonList name="Terapeuta" value={f.therapistId} onChange={(v) => set({ therapistId: v })} people={state.therapists.map((t) => ({ id: t.id, name: t.name }))} />
+        </div>
         <DateField label="Fecha" value={f.date} onChange={(v) => set({ date: v })} />
         <Field label="Monto"><input className="field tabular" inputMode="decimal" placeholder="0" value={f.amount} onChange={(e) => set({ amount: e.target.value.replace(/[^\d.]/g, '') })} /></Field>
         <Field label="Motivo">

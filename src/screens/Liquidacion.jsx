@@ -45,7 +45,7 @@ export default function Liquidacion({ app }) {
       <PageTitle eyebrow="Dirección" title="Liquidación" />
 
       <div className="mb-5 grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
-        <QuincenaSelect value={qid} options={quincenaOptions(state, today)} onChange={(v) => { setQid(v); setErrors(null); }} labelOf={(id) => `Quincena ${quincenaLabel(id)} · ${STEP_LABEL[state.quincenas[id]?.status || 'abierta']}`} />
+        <QuincenaSelect value={qid} options={quincenaOptions(state, today)} onChange={(v) => { setQid(v); setErrors(null); }} labelOf={(id) => `Quincena ${quincenaLabel(id)}`} />
       </div>
 
       {/* Estado de la quincena */}

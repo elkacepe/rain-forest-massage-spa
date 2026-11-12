@@ -158,14 +158,17 @@ export function BackLink({ onClick, children = 'Volver' }) {
 }
 
 export function QuincenaSelect({ value, options, onChange, labelOf }) {
+  // options viene ordenado de la más nueva a la más vieja; las flechas recorren las quincenas existentes.
+  const i = options.indexOf(value);
+  const older = options[i + 1];
+  const newer = options[i - 1];
+  const btn = 'flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-selva hover:bg-selva/5 disabled:opacity-25 disabled:hover:bg-transparent';
   return (
-    <select className="field !py-2.5 font-semibold" value={value} onChange={(e) => onChange(e.target.value)} aria-label="Quincena">
-      {options.map((q) => (
-        <option key={q} value={q}>
-          {labelOf(q)}
-        </option>
-      ))}
-    </select>
+    <div className="card flex items-center gap-1 px-1.5 py-1.5" role="group" aria-label="Quincena">
+      <button type="button" className={btn} disabled={!older} onClick={() => older && onChange(older)} aria-label="Quincena anterior"><ChevronLeft /></button>
+      <p className="min-w-0 flex-1 text-center text-[16px] font-semibold leading-tight text-selva" aria-live="polite">{labelOf(value)}</p>
+      <button type="button" className={btn} disabled={!newer} onClick={() => newer && onChange(newer)} aria-label="Quincena siguiente"><ChevronRight /></button>
+    </div>
   );
 }
 
@@ -308,6 +311,49 @@ export function DateField({ label, value, onChange, hint, marks }) {
         </div>
       )}
       {hint && <span className="mt-1.5 block text-[14px] text-noche/60">{hint}</span>}
+    </div>
+  );
+}
+
+// ---------- Selectores en bloque (reemplazan desplegables) ----------
+
+/** Grilla de opciones como tarjetas. options: [{ value, label, sub }] */
+export function OptionGrid({ name, value, onChange, options, cols = 2 }) {
+  return (
+    <div role="radiogroup" aria-label={name} className="grid gap-2" style={{ gridTemplateColumns: `repeat(${cols}, minmax(0,1fr))` }}>
+      {options.map((o) => {
+        const sel = value === o.value;
+        return (
+          <button key={o.value} type="button" role="radio" aria-checked={sel} onClick={() => onChange(o.value)} className={`flex min-h-[56px] flex-col items-start justify-center rounded-xl border px-3.5 py-2.5 text-left transition ${sel ? 'border-selva bg-selva text-white' : 'border-selva/15 bg-white text-selva hover:border-selva/40'}`}>
+            <span className="text-[16px] font-semibold leading-tight">{o.label}</span>
+            {o.sub && <span className={`tabular mt-0.5 text-[13px] leading-tight ${sel ? 'text-white/75' : 'text-noche/60'}`}>{o.sub}</span>}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+/** Lista de terapeutas con avatar. people: [{ id, name, sub }] */
+export function PersonList({ name, value, onChange, people, empty }) {
+  if (!people.length) return <p className="rounded-xl bg-white px-4 py-3 text-[15px] text-noche/70">{empty}</p>;
+  return (
+    <div role="radiogroup" aria-label={name} className="card divide-y divide-selva/10 overflow-hidden">
+      {people.map((t) => {
+        const sel = value === t.id;
+        return (
+          <button key={t.id} type="button" role="radio" aria-checked={sel} onClick={() => onChange(t.id)} className={`flex min-h-[60px] w-full items-center gap-3 px-4 py-2.5 text-left transition ${sel ? 'bg-selva/[0.07]' : 'hover:bg-arena/60'}`}>
+            <Avatar size={38} />
+            <span className="min-w-0 flex-1">
+              <span className="block text-[16px] font-semibold text-selva">{t.name}</span>
+              {t.sub && <span className="block truncate text-[13px] text-noche/60">{t.sub}</span>}
+            </span>
+            <span aria-hidden className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border ${sel ? 'border-selva bg-selva text-white' : 'border-selva/25'}`}>
+              {sel && <CheckIcon className="h-4 w-4" />}
+            </span>
+          </button>
+        );
+      })}
     </div>
   );
 }
