@@ -4,7 +4,7 @@ import { freeSlots, validateSession, priceFor } from '../lib/schedule.js';
 import { dateLabel, quincenaOf, quincenaLabel, weekday } from '../lib/dates.js';
 import { PAYMENT_METHODS } from '../lib/constants.js';
 import { massageById } from '../lib/config.js';
-import { BackLink, Button, ErrorBox, Field, PageTitle, Segmented, Money } from '../ui.jsx';
+import { BackLink, Button, DateField, ErrorBox, Field, PageTitle, Segmented, Money } from '../ui.jsx';
 
 export default function SessionForm({ app }) {
   const { state, role, today, commit, go, back } = app;
@@ -60,9 +60,7 @@ export default function SessionForm({ app }) {
       <PageTitle eyebrow="Recepción" title="Nueva sesión" />
 
       <div className="flex flex-col gap-6">
-        <Field label="Fecha" hint={`${dateLabel(d.date)} · abierto de ${hours.open} a ${hours.close} · quincena ${quincenaLabel(qid)}${q ? '' : ' (se abre con esta sesión)'}`}>
-          <input type="date" className="field" value={d.date} onChange={(e) => e.target.value && set({ date: e.target.value, time: '' })} />
-        </Field>
+        <DateField label="Fecha" value={d.date} onChange={(v) => set({ date: v, time: '' })} hint={`Abierto de ${hours.open} a ${hours.close} · quincena ${quincenaLabel(qid)}${q ? '' : ' (se abre con esta sesión)'}`} />
 
         <div>
           <span className="label mb-1.5 block">Modalidad</span>

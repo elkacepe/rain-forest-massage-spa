@@ -60,9 +60,10 @@ export default function Recibo({ app }) {
   const frozen = hasSnapshot(state, qid);
 
   return (
-    <div className="mx-auto max-w-2xl">
+    <div className="mx-auto max-w-4xl">
       <BackLink onClick={back} />
 
+      <div className="max-w-2xl">
       <article className="card overflow-hidden">
         <header className="border-b border-selva/10 px-5 py-5">
           <div className="flex items-start justify-between gap-3">
@@ -104,6 +105,7 @@ export default function Recibo({ app }) {
         <a href={waUrl} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-[48px] flex-1 items-center justify-center rounded-xl bg-terracota px-5 text-[16px] font-bold text-white hover:brightness-95">Compartir por WhatsApp</a>
         <Button variant="secondary" className="flex-1" onClick={copy}>Copiar texto</Button>
       </div>
+      </div>
 
       <section className="mt-10">
         <h2 className="mb-3 text-[24px]">Sesión por sesión</h2>
@@ -112,9 +114,9 @@ export default function Recibo({ app }) {
         ) : (
           <>
             {/* Móvil: tarjetas compactas */}
-            <ul className="flex flex-col divide-y divide-selva/10 rounded-2xl border border-selva/10 bg-white md:hidden">
+            <ul className="flex flex-col divide-y divide-selva/10 rounded-2xl border border-selva/10 bg-white lg:hidden">
               {lines.map((l) => (
-                <li key={l.sessionId} className="flex items-start justify-between gap-3 px-4 py-3">
+                <li key={l.sessionId} className="flex items-start justify-between gap-4 px-5 py-3">
                   <div className="min-w-0">
                     <p className="text-[15px] font-semibold">{dateLabel(l.date)} · {l.time}</p>
                     <p className="truncate text-[14px] text-noche/70">{massageById(state.config, l.massageId)?.name ?? l.massageId} {l.duration}′ · {place(state, l)}</p>
@@ -125,25 +127,25 @@ export default function Recibo({ app }) {
               ))}
             </ul>
             {/* Escritorio: tabla */}
-            <div className="hidden overflow-hidden rounded-2xl border border-selva/10 bg-white md:block">
+            <div className="hidden overflow-x-auto rounded-2xl border border-selva/10 bg-white lg:block">
               <table className="w-full text-[15px]">
                 <thead className="bg-selva/[0.04] text-left">
                   <tr className="label">
-                    <th className="px-4 py-3">Fecha</th><th className="px-4 py-3">Sesión</th><th className="px-4 py-3">Estado</th>
-                    <th className="px-4 py-3 text-right">Tarifa</th><th className="px-4 py-3 text-right">Comisión</th><th className="px-4 py-3 text-right">Viático</th><th className="px-4 py-3 text-right">Propina</th><th className="px-4 py-3 text-right">Subtotal</th>
+                    <th className="py-3 pl-5 pr-4">Fecha</th><th className="px-4 py-3">Sesión</th><th className="px-4 py-3">Estado</th>
+                    <th className="px-4 py-3 text-right">Tarifa</th><th className="px-4 py-3 text-right">Comisión</th><th className="px-4 py-3 text-right">Viático</th><th className="px-4 py-3 text-right">Propina</th><th className="py-3 pl-4 pr-5 text-right">Subtotal</th>
                   </tr>
                 </thead>
                 <tbody className="tabular divide-y divide-selva/10">
                   {lines.map((l) => (
                     <tr key={l.sessionId}>
-                      <td className="px-4 py-3 whitespace-nowrap">{dateLabel(l.date)} {l.time}</td>
+                      <td className="whitespace-nowrap py-3 pl-5 pr-4">{dateLabel(l.date)} {l.time}</td>
                       <td className="px-4 py-3">{massageById(state.config, l.massageId)?.name ?? l.massageId} {l.duration}′<span className="block text-[13px] text-noche/60">{place(state, l)}</span></td>
                       <td className="px-4 py-3 text-[14px]">{STATUS[l.status]}</td>
                       <td className="px-4 py-3 text-right">{money(l.price)}</td>
                       <td className="px-4 py-3 text-right">{money(l.comision + l.pagoCancelacion)}<span className="block text-[12px] text-noche/60">{rateLabel(l, row.rates.tierBonus)}</span></td>
                       <td className="px-4 py-3 text-right">{l.viatico ? money(l.viatico) : '—'}</td>
                       <td className="px-4 py-3 text-right">{l.propina ? money(l.propina) : '—'}</td>
-                      <td className="px-4 py-3 text-right font-semibold">{money(l.subtotal)}</td>
+                      <td className="py-3 pl-4 pr-5 text-right font-semibold">{money(l.subtotal)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -154,11 +156,11 @@ export default function Recibo({ app }) {
       </section>
 
       {row.advances.length > 0 && (
-        <section className="mt-8">
+        <section className="mt-8 max-w-2xl">
           <h2 className="mb-3 text-[24px]">Adelantos</h2>
           <ul className="card divide-y divide-selva/10">
             {row.advances.map((a) => (
-              <li key={a.id} className="flex items-start justify-between gap-3 px-4 py-3">
+              <li key={a.id} className="flex items-start justify-between gap-4 px-5 py-3">
                 <div>
                   <p className="text-[15px] font-semibold">{dateLabel(a.date)} · {a.code}</p>
                   <p className="text-[14px] text-noche/70">{a.reason}</p>

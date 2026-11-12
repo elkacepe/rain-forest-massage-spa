@@ -5,7 +5,7 @@ import { quincenaLabel, quincenaOf, dateLabel, prevQuincena } from '../lib/dates
 import { therapistById } from '../lib/config.js';
 import { money } from '../lib/format.js';
 import { quincenaOptions } from '../App.jsx';
-import { Button, Empty, ErrorBox, Field, PageTitle, QPill, QuincenaSelect, Sheet, TierBadge } from '../ui.jsx';
+import { Button, DateField, Empty, ErrorBox, PageTitle, QPill, QuincenaSelect, Sheet, TierBadge } from '../ui.jsx';
 
 const STEPS = ['abierta', 'en_revision', 'aprobada', 'pagada'];
 const STEP_LABEL = { abierta: 'Abierta', en_revision: 'En revisión', aprobada: 'Aprobada', pagada: 'Pagada' };
@@ -101,7 +101,7 @@ export default function Liquidacion({ app }) {
           </section>
 
           {/* Móvil */}
-          <ul className="flex flex-col gap-3 md:hidden">
+          <ul className="flex flex-col gap-3 lg:hidden">
             {rows.map((r) => (
               <li key={r.therapistId}>
                 <button type="button" onClick={() => go('recibo', { qid, therapistId: r.therapistId })} className="card flex w-full items-center justify-between gap-3 px-4 py-4 text-left hover:border-selva/40">
@@ -126,23 +126,23 @@ export default function Liquidacion({ app }) {
           </ul>
 
           {/* Escritorio */}
-          <div className="hidden overflow-hidden rounded-2xl border border-selva/10 bg-white md:block">
+          <div className="hidden overflow-x-auto rounded-2xl border border-selva/10 bg-white lg:block">
             <table className="w-full">
               <thead className="bg-selva/[0.04]">
                 <tr className="label text-left">
-                  <th className="px-4 py-3">Terapeuta</th>
+                  <th className="py-3 pl-5 pr-4">Terapeuta</th>
                   <th className="px-4 py-3 text-right">Ventas</th>
                   <th className="px-4 py-3 text-right">Comisiones</th>
                   <th className="px-4 py-3 text-right">Viáticos</th>
                   <th className="px-4 py-3 text-right">Propinas</th>
                   <th className="px-4 py-3 text-right">Adelantos</th>
-                  <th className="px-4 py-3 text-right">Neto</th>
+                  <th className="py-3 pl-4 pr-5 text-right">Neto</th>
                 </tr>
               </thead>
               <tbody className="tabular divide-y divide-selva/10 text-[15px]">
                 {rows.map((r) => (
                   <tr key={r.therapistId} className="cursor-pointer hover:bg-arena/60" onClick={() => go('recibo', { qid, therapistId: r.therapistId })}>
-                    <td className="px-4 py-4">
+                    <td className="py-4 pl-5 pr-4">
                       <span className="font-semibold text-selva">{nameOf(r.therapistId)}</span>
                       {r.superoEscalon && <span className="ml-2"><TierBadge /></span>}
                     </td>
@@ -151,19 +151,19 @@ export default function Liquidacion({ app }) {
                     <td className="px-4 py-4 text-right">{money(r.viaticos)}</td>
                     <td className="px-4 py-4 text-right">{money(r.propinas)}</td>
                     <td className="px-4 py-4 text-right">{r.adelantos + r.aDescontar ? `−${money(r.adelantos + r.aDescontar)}` : '—'}</td>
-                    <td className={`px-4 py-4 text-right font-display text-[26px] ${r.neto < 0 ? 'text-terracota' : 'text-selva'}`}>{money(r.neto)}</td>
+                    <td className={`py-4 pl-4 pr-5 text-right font-display text-[26px] ${r.neto < 0 ? 'text-terracota' : 'text-selva'}`}>{money(r.neto)}</td>
                   </tr>
                 ))}
               </tbody>
               <tfoot className="tabular border-t-2 border-selva/20 text-[15px] font-semibold">
                 <tr>
-                  <td className="px-4 py-4">Total</td>
+                  <td className="py-4 pl-5 pr-4">Total</td>
                   <td className="px-4 py-4 text-right">{money(totals.ventas)}</td>
                   <td className="px-4 py-4 text-right">{money(totals.comisiones)}</td>
                   <td className="px-4 py-4 text-right">{money(totals.viaticos)}</td>
                   <td className="px-4 py-4 text-right">{money(totals.propinas)}</td>
                   <td className="px-4 py-4 text-right">−{money(totals.adelantos + totals.aDescontar)}</td>
-                  <td className="px-4 py-4 text-right font-display text-[28px] font-normal">{money(totals.neto)}</td>
+                  <td className="py-4 pl-4 pr-5 text-right font-display text-[28px] font-normal">{money(totals.neto)}</td>
                 </tr>
               </tfoot>
             </table>
@@ -173,9 +173,7 @@ export default function Liquidacion({ app }) {
       )}
 
       <Sheet open={payOpen} title="Marcar como pagada" onClose={() => setPayOpen(false)}>
-        <Field label="Fecha de pago" hint="Obligatoria. Queda registrada en cada recibo.">
-          <input type="date" className="field" value={payDate} onChange={(e) => setPayDate(e.target.value)} />
-        </Field>
+        <DateField label="Fecha de pago" value={payDate} onChange={setPayDate} hint="Obligatoria. Queda registrada en cada recibo." />
         <Button className="mt-5 w-full" onClick={() => move('pagada', { paymentDate: payDate })}>Confirmar pago</Button>
         <div className="mt-3"><ErrorBox errors={errors} /></div>
       </Sheet>

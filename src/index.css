@@ -21,3 +21,19 @@
   .field { @apply w-full rounded-xl border border-selva/20 bg-white px-3.5 py-3 text-[16px] text-noche placeholder:text-noche/40 focus:border-selva focus:outline-none; }
   .card { @apply rounded-2xl bg-white border border-selva/10; }
 }
+
+@layer components {
+  /* Desplegables con flecha propia, sin el aspecto nativo */
+  select.field {
+    appearance: none;
+    -webkit-appearance: none;
+    padding-right: 2.75rem;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231F4D3F' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.9rem center;
+    background-size: 1.15rem;
+    cursor: pointer;
+  }
+  .no-scrollbar { scrollbar-width: none; }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+}

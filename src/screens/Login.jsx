@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { PANEL_KEY } from '../lib/constants.js';
-import { Button, ErrorBox, Field } from '../ui.jsx';
+import { Avatar, Button, CheckIcon, ErrorBox, Field } from '../ui.jsx';
 
 const ROLE_INFO = [
   { role: 'direccion', title: 'Dirección', text: 'Liquidaciones, adelantos, panel y ajustes.' },
@@ -33,31 +33,49 @@ export default function Login({ state, onLogin }) {
       </div>
 
       <form onSubmit={submit} className="flex flex-col gap-6">
-        <fieldset>
+        <fieldset className="min-w-0">
           <legend className="label mb-2">¿Con qué rol entrás?</legend>
           <div className="flex flex-col gap-2">
-            {ROLE_INFO.map((r) => (
-              <label key={r.role} className={`card flex min-h-[64px] cursor-pointer items-start gap-3 px-4 py-3 transition ${role === r.role ? '!border-selva ring-1 ring-selva' : ''}`}>
-                <input type="radio" name="rol" value={r.role} checked={role === r.role} onChange={() => setRole(r.role)} className="mt-1.5 h-4 w-4 accent-[#1F4D3F]" />
-                <span>
-                  <span className="block text-[17px] font-semibold text-selva">{r.title}</span>
-                  <span className="block text-[15px] text-noche/70">{r.text}</span>
-                </span>
-              </label>
-            ))}
+            {ROLE_INFO.map((r) => {
+              const sel = role === r.role;
+              return (
+                <label key={r.role} className={`card flex min-h-[64px] cursor-pointer items-center gap-3 px-4 py-3 transition has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-oro ${sel ? '!border-selva ring-1 ring-selva' : ''}`}>
+                  <input type="radio" name="rol" value={r.role} checked={sel} onChange={() => setRole(r.role)} className="sr-only" />
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-[17px] font-semibold text-selva">{r.title}</span>
+                    <span className="block text-[15px] text-noche/70">{r.text}</span>
+                  </span>
+                  <span aria-hidden className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border ${sel ? 'border-selva bg-selva text-white' : 'border-selva/25'}`}>
+                    {sel && <CheckIcon className="h-4 w-4" />}
+                  </span>
+                </label>
+              );
+            })}
           </div>
         </fieldset>
 
         {role === 'terapeuta' && (
-          <Field label="¿Quién sos?">
-            <select className="field" value={therapistId} onChange={(e) => setTherapistId(e.target.value)}>
-              {state.therapists.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.name}
-                </option>
-              ))}
-            </select>
-          </Field>
+          <fieldset className="min-w-0">
+            <legend className="label mb-2">¿Quién sos?</legend>
+            <div className="card divide-y divide-selva/10 overflow-hidden">
+              {state.therapists.map((t) => {
+                const sel = therapistId === t.id;
+                return (
+                  <label key={t.id} className={`flex min-h-[64px] cursor-pointer items-center gap-3 px-4 py-3 transition has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:-outline-offset-2 has-[:focus-visible]:outline-oro ${sel ? 'bg-selva/[0.06]' : 'hover:bg-arena/60'}`}>
+                    <input type="radio" name="terapeuta" value={t.id} checked={sel} onChange={() => setTherapistId(t.id)} className="sr-only" />
+                    <Avatar size={40} />
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-[17px] font-semibold text-selva">{t.name}</span>
+                      <span className="block truncate text-[14px] text-noche/60">{t.specialties.map((id) => state.config.catalog.find((m) => m.id === id)?.name).filter(Boolean).join(' · ')}</span>
+                    </span>
+                    <span aria-hidden className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border ${sel ? 'border-selva bg-selva text-white' : 'border-selva/25'}`}>
+                      {sel && <CheckIcon className="h-4 w-4" />}
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
+          </fieldset>
         )}
 
         <Field label="Clave del panel" hint="Clave compartida del spa. No hay cuentas individuales.">

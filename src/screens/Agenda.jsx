@@ -1,8 +1,8 @@
 import React, { useMemo, useState } from 'react';
-import { addDays, dateLabel, quincenaOf, quincenaLabel, toMin, fromMin } from '../lib/dates.js';
+import { addDays, dateLabel, quincenaOf, quincenaLabel, toMin, fromMin, weekday } from '../lib/dates.js';
 import { massageById, placeName, therapistById } from '../lib/config.js';
 import { Q_STATUS } from '../lib/constants.js';
-import { Button, Empty, PageTitle, StatusPill, Money } from '../ui.jsx';
+import { Avatar, Button, Calendar, CalendarIcon, ChevronLeft, ChevronRight, Empty, PageTitle, StatusPill, Money } from '../ui.jsx';
 
 export default function Agenda({ app }) {
   const { state, role, me, today, go } = app;
@@ -18,10 +18,15 @@ export default function Agenda({ app }) {
     [state.sessions, date, who],
   );
 
-  const week = Array.from({ length: 7 }, (_, i) => addDays(date, i - 3));
+  // Semana de lunes a domingo que contiene la fecha elegida. Las flechas avanzan de a un día.
+  const mondayOffset = (weekday(date) + 6) % 7;
+  const week = Array.from({ length: 7 }, (_, i) => addDays(date, i - mondayOffset));
   const qid = quincenaOf(date);
   const q = state.quincenas[qid];
   const locked = q && q.status !== 'abierta';
+  const [calOpen, setCalOpen] = useState(false);
+  const marks = useMemo(() => new Set(state.sessions.filter((s) => who === 'all' || s.therapistId === who).map((s) => s.date)), [state.sessions, who]);
+  const pick = (d) => { setDate(d); setCalOpen(false); };
 
   return (
     <div>
@@ -31,39 +36,52 @@ export default function Agenda({ app }) {
         right={canLoad && !locked ? <Button size="sm" onClick={() => go('nueva', { date })}>+ Sesión</Button> : null}
       />
 
-      <div className="mb-4 flex items-center gap-2">
-        <button type="button" aria-label="Semana anterior" onClick={() => setDate(addDays(date, -7))} className="min-h-[44px] min-w-[36px] rounded-lg text-[20px] text-noche/60 hover:text-selva">‹</button>
-        <div className="grid flex-1 grid-cols-7 gap-1">
-          {week.map((d) => {
-            const sel = d === date;
-            const has = state.sessions.some((s) => s.date === d && (who === 'all' || s.therapistId === who));
-            const [, , dd] = d.split('-');
+      <div className="card mb-4 px-2 py-3">
+        <div className="flex items-center gap-1">
+          <button type="button" aria-label="Día anterior" onClick={() => setDate(addDays(date, -1))} className="flex h-11 w-9 shrink-0 items-center justify-center rounded-full text-selva hover:bg-selva/5"><ChevronLeft /></button>
+          <div className="grid flex-1 grid-cols-7 gap-0.5">
+            {week.map((d) => {
+              const sel = d === date;
+              const has = marks.has(d);
+              return (
+                <button key={d} type="button" onClick={() => setDate(d)} aria-pressed={sel} aria-label={dateLabel(d)} className={`flex min-h-[58px] flex-col items-center justify-center rounded-2xl text-[12px] transition ${sel ? 'bg-selva text-white' : 'text-noche hover:bg-selva/5'}`}>
+                  <span className={`uppercase ${sel ? 'text-white/75' : d === today ? 'font-bold text-terracota' : 'text-noche/55'}`}>{dateLabel(d).split(' ')[0]}</span>
+                  <span className="tabular text-[17px] font-semibold">{Number(d.slice(8))}</span>
+                  <span aria-hidden className={`mt-0.5 h-1 w-1 rounded-full ${has ? (sel ? 'bg-oro' : 'bg-terracota') : 'bg-transparent'}`} />
+                </button>
+              );
+            })}
+          </div>
+          <button type="button" aria-label="Día siguiente" onClick={() => setDate(addDays(date, 1))} className="flex h-11 w-9 shrink-0 items-center justify-center rounded-full text-selva hover:bg-selva/5"><ChevronRight /></button>
+        </div>
+        <div className="mt-2 flex items-center justify-between gap-2 border-t border-selva/10 px-2 pt-2">
+          <button type="button" onClick={() => setCalOpen((o) => !o)} aria-expanded={calOpen} className="inline-flex min-h-[40px] items-center gap-2 rounded-full px-3 text-[14px] font-semibold text-selva hover:bg-selva/5">
+            <CalendarIcon className="h-[18px] w-[18px]" /> {calOpen ? 'Cerrar calendario' : 'Ver mes'}
+          </button>
+          {date !== today && (
+            <button type="button" onClick={() => pick(today)} className="min-h-[40px] rounded-full px-3 text-[14px] font-semibold text-terracota hover:bg-terracota/5">Ir a hoy</button>
+          )}
+        </div>
+        {calOpen && (
+          <div className="mt-2 border-t border-selva/10 px-1 pt-3">
+            <Calendar value={date} onChange={pick} marks={marks} />
+          </div>
+        )}
+      </div>
+
+      {role !== 'terapeuta' && (
+        <div className="no-scrollbar -mx-5 mb-5 flex gap-2 overflow-x-auto px-5 pb-1" role="radiogroup" aria-label="Filtrar por terapeuta">
+          {[{ id: 'all', short: 'Todas' }, ...state.therapists].map((t) => {
+            const sel = who === t.id;
             return (
-              <button key={d} type="button" onClick={() => setDate(d)} aria-pressed={sel} className={`flex min-h-[56px] flex-col items-center justify-center rounded-xl text-[12px] ${sel ? 'bg-selva text-white' : 'bg-white text-noche'} ${d === today && !sel ? 'ring-1 ring-terracota' : ''}`}>
-                <span className="uppercase opacity-70">{dateLabel(d).split(' ')[0]}</span>
-                <span className="tabular text-[17px] font-semibold">{Number(dd)}</span>
-                <span aria-hidden className={`mt-0.5 h-1 w-1 rounded-full ${has ? (sel ? 'bg-oro' : 'bg-terracota') : 'bg-transparent'}`} />
+              <button key={t.id} type="button" role="radio" aria-checked={sel} onClick={() => setWho(t.id)} className={`inline-flex min-h-[44px] shrink-0 items-center gap-2 rounded-full border py-1 text-[15px] font-semibold transition ${t.id === 'all' ? 'px-4' : 'pl-1 pr-4'} ${sel ? 'border-selva bg-selva text-white' : 'border-selva/15 bg-white text-selva hover:border-selva/40'}`}>
+                {t.id !== 'all' && <Avatar size={34} active={sel} />}
+                {t.short}
               </button>
             );
           })}
         </div>
-        <button type="button" aria-label="Semana siguiente" onClick={() => setDate(addDays(date, 7))} className="min-h-[44px] min-w-[36px] rounded-lg text-[20px] text-noche/60 hover:text-selva">›</button>
-      </div>
-
-      <div className="mb-5 flex flex-wrap items-center gap-2">
-        {date !== today && (
-          <Button size="sm" variant="ghost" onClick={() => setDate(today)}>Ir a hoy</Button>
-        )}
-        <input type="date" className="field !w-auto !py-2 text-[15px]" value={date} onChange={(e) => e.target.value && setDate(e.target.value)} aria-label="Elegir fecha" />
-        {role !== 'terapeuta' && (
-          <select className="field !w-auto !py-2 text-[15px]" value={who} onChange={(e) => setWho(e.target.value)} aria-label="Filtrar por terapeuta">
-            <option value="all">Todas las terapeutas</option>
-            {state.therapists.map((t) => (
-              <option key={t.id} value={t.id}>{t.name}</option>
-            ))}
-          </select>
-        )}
-      </div>
+      )}
 
       {locked && (
         <p className="mb-4 rounded-xl bg-oro/20 px-4 py-3 text-[15px] text-noche">

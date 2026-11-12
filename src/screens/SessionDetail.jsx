@@ -5,7 +5,7 @@ import { dateLabel, fromMin, toMin, minutesBetween, quincenaOf, todayISO, nowHHM
 import { massageById, placeName, therapistById } from '../lib/config.js';
 import { PAYMENT_METHODS, STATUS, MODALITY } from '../lib/constants.js';
 import { money } from '../lib/format.js';
-import { BackLink, Button, Empty, ErrorBox, Field, PageTitle, Row, Segmented, Sheet, StatusPill } from '../ui.jsx';
+import { BackLink, Button, DateField, Empty, ErrorBox, Field, PageTitle, Row, Segmented, Sheet, StatusPill } from '../ui.jsx';
 
 export default function SessionDetail({ app }) {
   const { state, role, me, commit, back } = app;
@@ -182,8 +182,8 @@ function CancelSheet({ open, s, state, role, onClose, onSave }) {
   return (
     <Sheet open={open} title="Cancelar sesión" onClose={onClose}>
       <p className="mb-4 text-[16px] text-noche/80">¿Cuándo avisó el cliente? La sesión era el {dateLabel(s.date)} a las {s.time}.</p>
-      <div className="grid grid-cols-2 gap-3">
-        <Field label="Fecha del aviso"><input type="date" className="field" value={date} onChange={(e) => setDate(e.target.value)} /></Field>
+      <div className="flex flex-col gap-4">
+        <DateField label="Fecha del aviso" value={date} onChange={setDate} />
         <Field label="Hora del aviso"><input type="time" className="field" value={time} onChange={(e) => setTime(e.target.value)} /></Field>
       </div>
       {hours != null && (

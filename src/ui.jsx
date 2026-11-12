@@ -168,3 +168,107 @@ export function QuincenaSelect({ value, options, onChange, labelOf }) {
     </select>
   );
 }
+
+// ---------- Íconos (trazo simple, sin imaginería de spa) ----------
+
+const Svg = ({ children, className = 'h-5 w-5' }) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
+    {children}
+  </svg>
+);
+export const ChevronLeft = (p) => <Svg {...p}><path d="M15 18l-6-6 6-6" /></Svg>;
+export const ChevronRight = (p) => <Svg {...p}><path d="M9 18l6-6-6-6" /></Svg>;
+export const CalendarIcon = (p) => <Svg {...p}><rect x="3.5" y="5" width="17" height="15.5" rx="2.5" /><path d="M3.5 10h17M8 3v4M16 3v4" /></Svg>;
+export const CheckIcon = (p) => <Svg {...p}><path d="M5 12.5l4.5 4.5L19 7.5" /></Svg>;
+
+/** Avatar genérico, igual para todas las terapeutas. */
+export function Avatar({ size = 40, active = false }) {
+  return (
+    <span aria-hidden="true" className={`inline-flex shrink-0 items-center justify-center rounded-full ${active ? 'bg-white/15 text-white' : 'bg-salvia/30 text-selva'}`} style={{ width: size, height: size }}>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" style={{ width: size * 0.55, height: size * 0.55 }}>
+        <circle cx="12" cy="8.5" r="3.6" />
+        <path d="M4.8 19.5c1.3-3.4 4-5.2 7.2-5.2s5.9 1.8 7.2 5.2" />
+      </svg>
+    </span>
+  );
+}
+
+// ---------- Selector de fecha propio ----------
+
+const MESES_LARGO = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+const DIAS_CORTO = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
+const DIAS_LARGO = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+const p2 = (n) => String(n).padStart(2, '0');
+const isoToday = () => { const d = new Date(); return `${d.getFullYear()}-${p2(d.getMonth() + 1)}-${p2(d.getDate())}`; };
+
+export function longDate(iso) {
+  const [y, m, d] = iso.split('-').map(Number);
+  const dt = new Date(y, m - 1, d);
+  return `${DIAS_LARGO[dt.getDay()]} ${d} de ${MESES_LARGO[m - 1]} ${y}`;
+}
+
+/** Calendario mensual. `marks`: Set de fechas ISO con un punto (por ejemplo, días con sesiones). */
+export function Calendar({ value, onChange, marks }) {
+  const [view, setView] = React.useState(value.slice(0, 7));
+  React.useEffect(() => setView(value.slice(0, 7)), [value]);
+  const [y, m] = view.split('-').map(Number);
+  const first = (new Date(y, m - 1, 1).getDay() + 6) % 7; // lunes = 0
+  const days = new Date(y, m, 0).getDate();
+  const today = isoToday();
+  const shift = (n) => { const d = new Date(y, m - 1 + n, 1); setView(`${d.getFullYear()}-${p2(d.getMonth() + 1)}`); };
+  const cells = [...Array(first).fill(null), ...Array.from({ length: days }, (_, i) => `${view}-${p2(i + 1)}`)];
+  return (
+    <div className="select-none">
+      <div className="mb-2 flex items-center justify-between">
+        <button type="button" onClick={() => shift(-1)} aria-label="Mes anterior" className="flex h-11 w-11 items-center justify-center rounded-full text-selva hover:bg-selva/5"><ChevronLeft /></button>
+        <p className="font-display text-[20px] capitalize text-selva">{MESES_LARGO[m - 1]} {y}</p>
+        <button type="button" onClick={() => shift(1)} aria-label="Mes siguiente" className="flex h-11 w-11 items-center justify-center rounded-full text-selva hover:bg-selva/5"><ChevronRight /></button>
+      </div>
+      <div className="grid grid-cols-7 text-center">
+        {DIAS_CORTO.map((d) => <span key={d} className="pb-1 text-[12px] font-semibold text-noche/50">{d}</span>)}
+        {cells.map((iso, i) =>
+          iso ? (
+            <button
+              key={iso}
+              type="button"
+              onClick={() => onChange(iso)}
+              aria-pressed={iso === value}
+              aria-label={longDate(iso)}
+              className={`tabular relative mx-auto flex h-10 w-10 items-center justify-center rounded-full text-[15px] font-semibold transition ${iso === value ? 'bg-selva text-white' : iso === today ? 'text-terracota ring-1 ring-terracota' : 'text-noche hover:bg-selva/5'}`}
+            >
+              {Number(iso.slice(8))}
+              {marks?.has(iso) && <span className={`absolute bottom-1 h-1 w-1 rounded-full ${iso === value ? 'bg-oro' : 'bg-terracota'}`} />}
+            </button>
+          ) : (
+            <span key={`e${i}`} />
+          ),
+        )}
+      </div>
+      {value !== today && (
+        <div className="mt-2 text-center">
+          <button type="button" onClick={() => onChange(today)} className="min-h-[40px] rounded-full px-4 text-[14px] font-semibold text-selva hover:bg-selva/5">Ir a hoy</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** Campo de fecha: botón con la fecha legible que despliega el calendario debajo. */
+export function DateField({ label, value, onChange, hint, marks }) {
+  const [open, setOpen] = React.useState(false);
+  return (
+    <div>
+      {label && <span className="label mb-1.5 block">{label}</span>}
+      <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open} className={`field flex items-center justify-between gap-3 text-left ${open ? '!border-selva' : ''}`}>
+        <span className="first-letter:uppercase">{value ? longDate(value) : 'Elegí una fecha'}</span>
+        <CalendarIcon className="h-5 w-5 shrink-0 text-selva" />
+      </button>
+      {open && (
+        <div className="mt-2 rounded-2xl border border-selva/10 bg-white p-3">
+          <Calendar value={value} marks={marks} onChange={(d) => { onChange(d); setOpen(false); }} />
+        </div>
+      )}
+      {hint && <span className="mt-1.5 block text-[14px] text-noche/60">{hint}</span>}
+    </div>
+  );
+}

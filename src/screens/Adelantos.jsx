@@ -4,7 +4,7 @@ import { advanceCheck, isLocked } from '../lib/engine.js';
 import { quincenaOf, quincenaLabel, dateLabel } from '../lib/dates.js';
 import { therapistById } from '../lib/config.js';
 import { money } from '../lib/format.js';
-import { Button, Empty, ErrorBox, Field, PageTitle, Row, Sheet } from '../ui.jsx';
+import { Button, DateField, Empty, ErrorBox, Field, PageTitle, Row, Sheet } from '../ui.jsx';
 
 export default function Adelantos({ app }) {
   const { state, today, commit } = app;
@@ -40,10 +40,8 @@ export default function Adelantos({ app }) {
             ))}
           </select>
         </Field>
-        <div className="grid grid-cols-2 gap-3">
-          <Field label="Fecha"><input type="date" className="field" value={f.date} onChange={(e) => set({ date: e.target.value })} /></Field>
-          <Field label="Monto"><input className="field tabular" inputMode="decimal" placeholder="0" value={f.amount} onChange={(e) => set({ amount: e.target.value.replace(/[^\d.]/g, '') })} /></Field>
-        </div>
+        <DateField label="Fecha" value={f.date} onChange={(v) => set({ date: v })} />
+        <Field label="Monto"><input className="field tabular" inputMode="decimal" placeholder="0" value={f.amount} onChange={(e) => set({ amount: e.target.value.replace(/[^\d.]/g, '') })} /></Field>
         <Field label="Motivo">
           <input className="field" value={f.reason} onChange={(e) => set({ reason: e.target.value })} placeholder="Ej.: pedido por WhatsApp" />
         </Field>
