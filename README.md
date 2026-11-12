@@ -38,11 +38,13 @@ Otros comandos:
     ├── main.jsx            Monta React
     ├── index.css           Fuentes (DM Serif Display, Source Sans 3) y estilos base
     ├── App.jsx             Carga de datos, roles y permisos, navegación, barra inferior, guardado
-    ├── ui.jsx              Componentes visuales compartidos (botones, chips de estado, hojas modales, avisos)
+    ├── ui.jsx              Componentes visuales compartidos: botones, chips de estado, hojas modales, avisos,
+    │                       íconos, avatar, calendario propio (Calendar, DateField), selectores en bloque
+    │                       (OptionGrid, PersonList, Segmented) y navegador de quincenas (QuincenaSelect)
     ├── screens/            Las 10 pantallas
-    │   ├── Login.jsx           1. Acceso: clave + rol
-    │   ├── Agenda.jsx          2. Agenda por día (según rol)
-    │   ├── SessionForm.jsx     3. Nueva sesión, con horarios libres calculados
+    │   ├── Login.jsx           1. Acceso: clave + rol + terapeuta (lista con avatar)
+    │   ├── Agenda.jsx          2. Agenda por día: semana lun–dom, flechas día a día, calendario, filtro por terapeuta
+    │   ├── SessionForm.jsx     3. Nueva sesión: masaje, terapeuta y colonia en bloques, horarios libres calculados
     │   ├── SessionDetail.jsx   4. Detalle de sesión: realizada, cancelar, no se presentó, propina, notas
     │   ├── MyQuincena.jsx      5. Mi quincena (terapeuta): acumulado, escalón, mis recibos
     │   ├── Liquidacion.jsx     6. Liquidación: Abierta → En revisión → Aprobada → Pagada
@@ -150,7 +152,37 @@ La semilla se carga **solo si esa clave no existe**. Si alguien borra todas las 
 
 ---
 
-## 4. Reglas implementadas
+## 4. Interfaz
+
+- **Sin controles nativos:** no hay desplegables (`<select>`) ni el selector de fecha del navegador. Todo se elige con componentes propios de `src/ui.jsx`, pensados para el dedo en un móvil de 360 px (zonas táctiles de 44 px o más):
+
+  | Qué se elige | Cómo |
+  |---|---|
+  | Rol y terapeuta (acceso) | Lista de bloques con check; la terapeuta lleva avatar |
+  | Masaje y colonia | Tarjetas en grilla (`OptionGrid`) |
+  | Terapeuta (nueva sesión, adelantos) | Lista con avatar (`PersonList`) |
+  | Modalidad, duración, cabina, medio de pago | Control segmentado (`Segmented`) |
+  | Fechas | `DateField`: muestra la fecha completa («Jueves 12 de noviembre 2026») y despliega el calendario debajo |
+  | Quincena (liquidación, panel) | Flechas ‹ › (`QuincenaSelect`) |
+
+- **Calendario (`Calendar`):**
+  - La semana empieza en lunes.
+  - Hoy se marca en terracota y el día elegido en verde selva.
+  - En la agenda, los días con sesiones llevan un punto.
+  - Tocar el mes («Noviembre 2026 ▾») abre la **vista de año**: las flechas cambian de año y se elige el mes. Desde ahí, «Volver a 2026» regresa al año en curso.
+  - Es el mismo componente en la agenda, nueva sesión, aviso de cancelación, adelantos y fecha de pago.
+- **Agenda:**
+  - Muestra la semana de lunes a domingo del día elegido.
+  - Las flechas avanzan de **a un día**. «Ver mes» despliega el calendario e «Ir a hoy» vuelve al día actual.
+  - El filtro por terapeuta es una fila de botones con avatar que se desliza de costado. No aparece para el rol Terapeuta, que solo ve su propia agenda.
+- **Tablas:**
+  - En Liquidación y en el Recibo, la tabla aparece desde 1024 px de ancho.
+  - Por debajo, cada fila se muestra como tarjeta con el neto grande a la derecha.
+  - Si aun así la tabla no entra, se desplaza de costado en lugar de cortarse.
+
+---
+
+## 5. Reglas implementadas
 
 - **Comisión base:** 35 % del precio en cabina y 45 % a domicilio. El precio que se usa es el guardado en la sesión al momento de agendarla.
 - **Escalón por quincena:** las sesiones Realizadas de cada terapeuta se ordenan por fecha y hora. Los primeros $40,000 pagan la tasa base y lo que supera esa cifra paga 5 puntos más. Si una sesión cruza el tope, se divide: la parte hasta $40,000 paga la tasa base y el resto la tasa con escalón.
@@ -181,7 +213,7 @@ La semilla se carga **solo si esa clave no existe**. Si alguien borra todas las 
 
 ---
 
-## 5. Decisiones que no estaban en el encargo
+## 6. Decisiones que no estaban en el encargo
 
 - **Lo ganado (para el tope de adelantos)** son comisiones + viáticos + propinas. El encargo no aclaraba si las propinas entraban; si no deben contar, el cambio es una línea en `engine.js` → `advanceCheck`.
 - **Ingresos del panel** son ventas realizadas + cargos por cancelación. Las propinas quedan afuera porque pasan directo a la terapeuta.
@@ -198,4 +230,6 @@ La semilla se carga **solo si esa clave no existe**. Si alguien borra todas las 
 - **La clave del panel sirve para los tres roles.** El encargo pedía una clave compartida sin cuentas, y se interpretó como una sola clave de entrada más el selector de rol.
 - **La pantalla de liquidación abre por defecto en la quincena más antigua que todavía no está pagada.**
 - **«Imprimir» se reemplazó por «Copiar texto»**, porque el visor de artefactos bloquea la impresión.
+- **Las flechas de quincena solo recorren quincenas que ya tienen registros**, más la del día de hoy. No se puede navegar a quincenas futuras vacías: se abren solas con el primer registro.
+- **La hora del aviso de cancelación** sigue usando el selector de hora nativo del teléfono (la rueda de iOS o Android), que en móvil es más cómodo que uno propio.
 - **Los montos se redondean a centavos** en cada línea, y se muestran sin decimales cuando son enteros (por ejemplo $18,450 o $437.50).
