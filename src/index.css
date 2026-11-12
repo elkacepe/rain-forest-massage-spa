@@ -1,0 +1,23 @@
+@import '@fontsource/dm-serif-display/latin-400.css';
+@import '@fontsource/source-sans-3/latin-400.css';
+@import '@fontsource/source-sans-3/latin-600.css';
+@import '@fontsource/source-sans-3/latin-700.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html { -webkit-text-size-adjust: 100%; }
+  body { @apply bg-arena text-selva font-sans antialiased; }
+  h1, h2, h3 { @apply font-display font-normal; }
+  input, select, textarea, button { font: inherit; }
+  :focus-visible { outline: 2px solid #D9A441; outline-offset: 2px; }
+}
+
+@layer components {
+  .tabular { font-variant-numeric: tabular-nums; }
+  .label { @apply text-[13px] font-semibold uppercase tracking-[0.08em] text-noche/70; }
+  .field { @apply w-full rounded-xl border border-selva/20 bg-white px-3.5 py-3 text-[16px] text-noche placeholder:text-noche/40 focus:border-selva focus:outline-none; }
+  .card { @apply rounded-2xl bg-white border border-selva/10; }
+}
