@@ -1,12 +1,13 @@
 {
   "name": "rain-forest-massage-spa",
   "version": "1.0.0",
-  "description": "",
+  "description": "Sesiones y liquidación de terapeutas para Rain Forest Massage Spa (México)",
   "main": "index.js",
   "scripts": {
     "test": "node --test tests/*.test.js",
     "dev": "vite",
-    "build": "vite build"
+    "build": "vite build",
+    "preview": "vite preview"
   },
   "keywords": [],
   "author": "",
@@ -26,5 +27,8 @@
     "vite-plugin-singlefile": "^2.3.4"
   },
   "type": "module",
-  "private": "true"
+  "private": "true",
+  "engines": {
+    "node": ">=18.18"
+  }
 }
